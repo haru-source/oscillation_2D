@@ -142,6 +142,7 @@ class PINN_Model(tf.keras.Model):
         
         xx   = resPoints[:,0:1]
         yy   = resPoints[:,1:2]
+        tt  = resPoints[:,2:3]
 
         Eqns = self.Equations(xx, yy)
 
@@ -157,6 +158,7 @@ class PINN_Model(tf.keras.Model):
     def call_loss_BC_Right(self, BC_Points_Right):
         x   = BC_Points_Right[:,0:1]
         y   = BC_Points_Right[:,1:2]
+        t   = BC_Points_Right[:,2:3]
 
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(x)
@@ -210,13 +212,15 @@ class PINN_Model(tf.keras.Model):
     def cal_loss_pRef(self):
         x0 = np.full((1,1), 1.0, dtype=config.real(np))
         y0 = np.full((1,1), 0.0, dtype=config.real(np))
+        t0 = np.full((1,1), 0.0, dtype=config.real(np))
+        
         
         x0 = tf.convert_to_tensor(x0, dtype=config.real(tf))
         y0 = tf.convert_to_tensor(y0, dtype=config.real(tf))
+        t0 = tf.convert_to_tensor(t0, dtype=config.real(tf))
         
-        
-        sol = self.net_field(x0, y0)
-        pp = sol[2]
+        sol = self.net_field(x0, y0, t0)
+        pp = sol[3]
 
         loss_Pref = tf.reduce_mean(tf.square(pp))
         loss_Pref = 0
