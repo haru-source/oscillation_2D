@@ -210,11 +210,8 @@ class DomainSphere(Interval):
             #  u1 = np.random.uniform(0.0, 1.0-1e-6, size=Nbc).astype(config.real(np))
              u2 = np.random.uniform(0.0, 1.0, size=Nbc).astype(config.real(np))
 
-            #  phi   = 2.0*np.pi*u1
              theta = np.arccos(2.0*u2 - 1.0)
-            #  phi = self.pDomain.uniform_points(Nbc).flatten()   # phi
-            #  theta = self.qDomain.uniform_points(Nbc).flatten()   # theta
-             
+           
              P2 = (3.0 * np.cos(theta)**2 - 1.0)
              cos_t = np.cos(t_fixed)
              
@@ -225,26 +222,17 @@ class DomainSphere(Interval):
              t_array = np.full(Nbc, t_fixed)
              data = np.column_stack((x, y, t_array))
              all_data.append(data)
-            #  print("/n all_data",all_data)
         
         BC_points = np.vstack(all_data)
-        # print(f"BC Total points: {BC_points.shape[0]}")
-        # print("\nBC_points shape :", BC_points.shape)
-        # print("\nSaved TSV: BC_points.tsv")
-        # np.savetxt('{:}/BC_points.tsv'.format(out_dir), BC_points, fmt='%16.8e', delimiter='\t', header='x\ty\tz\tt', comments='')
+        np.savetxt('{:}/BC_points.tsv'.format(out_dir), BC_points, fmt='%16.8e', delimiter='\t', header='x\ty\tz\tt', comments='')
         return tf.convert_to_tensor(BC_points, config.real(tf))
             
 
     def genGirdPoints(self, Nr, Nq, Nt, out_dir):
         
         os.makedirs(out_dir, exist_ok=True)
-        # t_list     = np.linspace(0.0, self.tmax, Nt)
-        # phi_list   = np.linspace(0.0, self.pDomain.right, Np)
-        # theta_list = np.linspace(0.0, self.qDomain.right, Nq)
-        # r_list     = np.linspace(0.0, 1.0, Nr)
         
         t_list     = np.linspace(0.0, self.tmax, Nt)
-        # phi_list   = np.linspace(self.pDomain.left, self.pDomain.right, Np)
         theta_list = np.linspace(self.qDomain.left, self.qDomain.right, Nq)
         r_list     = np.linspace(0.0, 1.0, Nr)
         
@@ -267,9 +255,6 @@ class DomainSphere(Interval):
     
         data = np.array(data)
         Grid_points = np.array(data)
-        # print(f"Total points: {Grid_points.shape[0]}")
-        # print("\nGrid_points shape:", Grid_points.shape)        
-        # print("\nSaved TSV:Grid_points.tsv") 
         np.savetxt('{:}/Grid_points.tsv'.format(out_dir), Grid_points, fmt='%16.8e', delimiter='\t', header='x\ty\tz\tt', comments='')
         print("出力完了")
         return tf.convert_to_tensor(Grid_points    , config.real(tf))
@@ -282,8 +267,6 @@ class DomainSphere(Interval):
         os.makedirs("output_vtu", exist_ok=True)
         os.makedirs("output_vtu_BC", exist_ok=True)
         os.makedirs("output_vtu_Grid", exist_ok=True)
-
-        
         
         #TSV読み込み
         data = np.loadtxt(f"output_test/{tsv_file}", skiprows=1)
@@ -318,8 +301,6 @@ class DomainSphere(Interval):
             cells = vtk.vtkCellArray()
             
             print(f"time={ti}, N={np.sum(mask)}")
-            
-            
             
             for j in range(N):
                 vertex = vtk.vtkVertex()

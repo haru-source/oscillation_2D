@@ -61,7 +61,7 @@ if __name__ == "__main__":
     rmin = 1e-6
     domain = DomainSphere(Space_1D(rmin, 1.0), Space_1D(0, np.pi ), timeDomain=TimeDomain(0.0,2*np.pi), a2=0.1)  
 
-    model = PINN_Model_steady(numHiddenLayers=3, numNeurons=40, domain = domain)
+    model = PINN_Model_steady(numHiddenLayers=5, numNeurons=30, domain = domain)
     model.build()
     model.summary()
 
