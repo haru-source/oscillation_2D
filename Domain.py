@@ -83,10 +83,12 @@ class TimeDomain(Interval):
 
 
 class DomainSphere(Interval):
-    def __init__(self, rDomain, thetaDomain, phiDomain, timeDomain, a2=0.4):
+    # def __init__(self, rDomain, thetaDomain, phiDomain, timeDomain, a2=0.4):
+    def __init__(self, rDomain, thetaDomain, timeDomain, a2=0.4):
+    
         self.rDomain = rDomain
         self.qDomain = thetaDomain
-        self.pDomain = phiDomain
+        # self.pDomain = phiDomain
         self.timeDomain = timeDomain
         self.a2 = a2
         
@@ -101,15 +103,14 @@ class DomainSphere(Interval):
         self.tmax = self.timeDomain.tmax
         theta_min = self.qDomain.left
         theta_max = self.qDomain.right
-        phi_min   = self.pDomain.left
-        phi_max   = self.pDomain.right
+        # phi_min   = self.pDomain.left
+        # phi_max   = self.pDomain.right
     
     ####    デカルト変換     ####
-    def sphere_to_cartesian(self, r, theta, phi):
-        x = r * np.sin(theta) * np.cos(phi)
-        y = r * np.sin(theta) * np.sin(phi)
-        z = r * np.cos(theta)
-        return x, y, z
+    def sphere_to_cartesian(self, r, theta):
+        x = r * np.sin(theta) 
+        y = r * np.cos(theta) 
+        return x, y
     
     def R_theta(self, theta):
         return 1.0 + self.a2 * (3.0*np.cos(theta)**2 - 1.0)
@@ -117,20 +118,8 @@ class DomainSphere(Interval):
     def PHI(self, r, theta):
         return r - self.R_theta(theta)
 
-    # def genResidualPoints(self, Nf):
-    #     u1 = np.random.uniform(0.0, 1.0-1e-6, size=Nf).astype(config.real(np))
-    #     u2 = np.random.uniform(0.0, 1.0, size=Nf).astype(config.real(np))
-    #     rr = np.random.uniform(0.0, 1.0, size=Nf).astype(config.real(np))
-    #     rr = np.cbrt(rr)
-        
-    #     pp = 2.0*np.pi*u1
-    #     qq = np.arccos(2.0*u2-1.0)
 
-    #     x, y, z = self.sphere_to_cartesian(rr, qq, pp)
-    #     XYZ =  np.hstack([x[:,None], y[:,None], z[:,None]])
-    #     return tf.convert_to_tensor(XYZ,config.real(tf))
-
-    def genResidualPoints(self, Nf, Nt,out_dir):
+    def genResidualPoints(self, Nf, Nt, out_dir):
 
         time_list = np.linspace(0.0, self.tmax, Nt)
         all_data = []
@@ -140,14 +129,13 @@ class DomainSphere(Interval):
             
             # 液滴の範囲を変えたいときはここをかえる
             # phi = u1, theta = u2 
-             u1 = np.random.uniform(0.0, 0.05-1e-6, size=Nf).astype(config.real(np))
+            #  u1 = np.random.uniform(0.0, 0.05-1e-6, size=Nf).astype(config.real(np))
              u2 = np.random.uniform(0.0, 1.0, size=Nf).astype(config.real(np))
              u3 = np.random.rand(Nf)
             
-             phi   = 2.0*np.pi*u1
+            #  phi   = 2.0*np.pi*u1
              theta = np.arccos(2.0*u2 - 1.0)
-             
-             
+
              
              P2 = (3.0 * np.cos(theta)**2 - 1.0)
              cos_t = np.cos(t_fixed)
@@ -157,9 +145,9 @@ class DomainSphere(Interval):
              Rmax_theta = 1.0 + self.a2 * P2 * cos_t
             
              r = np.cbrt(u3) * Rmax_theta
-             x, y, z = self.sphere_to_cartesian(r, theta, phi)
+             x, y= self.sphere_to_cartesian(r, theta)
              t_array = np.full(Nf, t_fixed)
-             data = np.column_stack((x, y, z, t_array))
+             data = np.column_stack((x, y, t_array))
              all_data.append(data)
 
         GE_points = np.vstack(all_data)
@@ -187,8 +175,8 @@ class DomainSphere(Interval):
     # 列分解
         x = data[:, 0]
         y = data[:, 1]
-        z = data[:, 2]
-        t = data[:, 3]
+        # z = data[:, 2]
+        t = data[:, 2]
 
     # tのユニーク値（丸めて誤差対策）
         t_unique = np.unique(np.round(t, 8))
@@ -219,10 +207,10 @@ class DomainSphere(Interval):
         all_data = []
 
         for t_fixed in time_list:
-             u1 = np.random.uniform(0.0, 1.0-1e-6, size=Nbc).astype(config.real(np))
+            #  u1 = np.random.uniform(0.0, 1.0-1e-6, size=Nbc).astype(config.real(np))
              u2 = np.random.uniform(0.0, 1.0, size=Nbc).astype(config.real(np))
 
-             phi   = 2.0*np.pi*u1
+            #  phi   = 2.0*np.pi*u1
              theta = np.arccos(2.0*u2 - 1.0)
             #  phi = self.pDomain.uniform_points(Nbc).flatten()   # phi
             #  theta = self.qDomain.uniform_points(Nbc).flatten()   # theta
@@ -233,9 +221,9 @@ class DomainSphere(Interval):
              Rmax_theta = 1.0 + self.a2 * P2 * cos_t
 
              r = Rmax_theta
-             x,y,z = self.sphere_to_cartesian(r, theta, phi)
+             x,y = self.sphere_to_cartesian(r, theta)
              t_array = np.full(Nbc, t_fixed)
-             data = np.column_stack((x, y, z, t_array))
+             data = np.column_stack((x, y, t_array))
              all_data.append(data)
             #  print("/n all_data",all_data)
         
@@ -247,7 +235,7 @@ class DomainSphere(Interval):
         return tf.convert_to_tensor(BC_points, config.real(tf))
             
 
-    def genGirdPoints(self, Nr, Nq, Np, Nt, out_dir):
+    def genGirdPoints(self, Nr, Nq, Nt, out_dir):
         
         os.makedirs(out_dir, exist_ok=True)
         # t_list     = np.linspace(0.0, self.tmax, Nt)
@@ -256,7 +244,7 @@ class DomainSphere(Interval):
         # r_list     = np.linspace(0.0, 1.0, Nr)
         
         t_list     = np.linspace(0.0, self.tmax, Nt)
-        phi_list   = np.linspace(self.pDomain.left, self.pDomain.right, Np)
+        # phi_list   = np.linspace(self.pDomain.left, self.pDomain.right, Np)
         theta_list = np.linspace(self.qDomain.left, self.qDomain.right, Nq)
         r_list     = np.linspace(0.0, 1.0, Nr)
         
@@ -266,16 +254,16 @@ class DomainSphere(Interval):
             
             cos_t = np.cos(t_fixed)
             
-            for phi in phi_list:
-                
-                for theta in theta_list:
+            # for phi in phi_list:
+            for theta in theta_list:
                     P2 = (3.0 * np.cos(theta)**2 - 1.0)
                     Rmax_theta = 1.0 + self.a2 * P2 * cos_t
                     
                     for r_theta in r_list:
                         r = r_theta * Rmax_theta
-                        x, y, z = self.sphere_to_cartesian(r, theta, phi)
-                        data.append([x, y, z, t_fixed])
+                        x, y = self.sphere_to_cartesian(r, theta)
+                        data.append([x, y, t_fixed])
+              
     
         data = np.array(data)
         Grid_points = np.array(data)
@@ -301,8 +289,8 @@ class DomainSphere(Interval):
         data = np.loadtxt(f"output_test/{tsv_file}", skiprows=1)
         x = data[:,0]
         y = data[:,1]
-        z = data[:,2]   
-        t = data[:,3]
+        # z = data[:,2]  
+        t = data[:,2]
 
 
         t_rounded = np.round(t, 5)
@@ -316,9 +304,9 @@ class DomainSphere(Interval):
             
             x_i = x[mask]
             y_i = y[mask]
-            z_i = z[mask]
+            # z_i = z[mask]
 
-            pts_np = np.column_stack((x_i, y_i, z_i))
+            pts_np = np.column_stack((x_i, y_i))
             N = pts_np.shape[0]
 
             # == VTU 書き出し ==
@@ -358,21 +346,14 @@ if __name__ == "__main__":
 #     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '-1'
     rDomain     = Space_1D(1e-6, 1.0)
     thetaDomain = Space_1D(0.0, np.pi)
-    phiDomain   = Space_1D(0.0, np.pi)
+    # phiDomain   = Space_1D(0.0, np.pi)
     timeDomain = TimeDomain(0.0, 2*np.pi)
-    domain = DomainSphere(rDomain, thetaDomain, phiDomain, timeDomain, a2=0.1)    # 点の数
+    domain = DomainSphere(rDomain, thetaDomain, timeDomain, a2=0.1)    # 点の数
     Nf  = 10000   # 内部点
-    Nf_Ad = 100
     Nt  = 100
-#     Nbc = 10000   # 境界点
     out_dir = "output_test"
     GE_points = domain.genResidualPoints(Nf, Nt, out_dir=out_dir)
-    Grid_points = domain.genGirdPoints(Nr=5, Nq=50, Np=30, Nt=30, out_dir=out_dir)
-#     # tsv_to_vtu_timeseries = domain.tsv_to_vtu_timeseries('GE_points.tsv', "output_vtu")
-#     # tsv_to_vtu_timeseries = domain.tsv_to_vtu_timeseries('BC_points.tsv', "output_vtu_BC") 
-#     tsv_to_vtu_timeseries = domain.tsv_to_vtu_timeseries('Grid_points.tsv', "output_vtu_Grid")    
-    # domain.split_tsv_by_time(input_file='output_test/GE_points.tsv', out_dir="output_split")
-#     # domain.split_tsv_by_time(input_file='output_test/BC_points.tsv', out_dir="output_split_BC")
+    Grid_points = domain.genGirdPoints(Nr=5, Nq=50, Nt=30, out_dir=out_dir)
     domain.split_tsv_by_time(input_file='output_test/Grid_points.tsv', out_dir="output_split_Grid")
     
      

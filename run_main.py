@@ -6,7 +6,7 @@ import numpy as np
 import os
 import tensorflow as tf
 from Domain import *
-from PINN_Model import PINN_Model_steady
+from PINN_Model_old import PINN_Model_steady
 from SolverSciPy import *
 import time
 import argparse
@@ -18,7 +18,7 @@ import math
 # import vtk
 # from vtk.util import numpy_support as vns
 
-from interface import Interface
+from interface_old import Interface
 
 from scipy.linalg import cholesky,LinAlgError
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
     rmin = 1e-6
-    domain = DomainSphere(Space_1D(rmin, 1.0), Space_1D(0, np.pi ), Space_1D(0, 0.1*np.pi), timeDomain=TimeDomain(0.0,2*np.pi), a2=0.1)  
+    domain = DomainSphere(Space_1D(rmin, 1.0), Space_1D(0, np.pi ), timeDomain=TimeDomain(0.0,2*np.pi), a2=0.1)  
 
     model = PINN_Model_steady(numHiddenLayers=3, numNeurons=40, domain = domain)
     model.build()
@@ -133,15 +133,13 @@ if __name__ == "__main__":
     # # ################################################
     Nr_eval = 30   # r 方向
     Nq_eval = 30   # theta 方向
-    Np_eval = 30   # phi 方向
     Nt_eval = 100   # 時間方向
-    Grid_points = domain.genGirdPoints(Nr_eval, Nq_eval, Np_eval, Nt_eval,out_dir="output_Grid")
+    Grid_points = domain.genGirdPoints(Nr_eval, Nq_eval, Nt_eval,out_dir="output_Grid")
     x_eval = Grid_points[:,0:1]
     y_eval = Grid_points[:,1:2]
-    z_eval = Grid_points[:,2:3]
-    t_eval = Grid_points[:,3:4]
-    u, v, w, p = model.net_field(x_eval, y_eval, z_eval, t_eval)
-    arrayForOutput = np.hstack((x_eval, y_eval, z_eval, t_eval, u, v, w, p))
-    np.savetxt('{:}/new_result_{:05d}.tsv'.format(out_dir, solver.get_iter()), arrayForOutput, fmt = '%.6e', delimiter = '\t', newline = '\r\n', header='x \t y \t z \t t \t u \t v \t w \t p')
+    t_eval = Grid_points[:,2:3]
+    u, v, p = model.net_field(x_eval, y_eval, t_eval)
+    arrayForOutput = np.hstack((x_eval, y_eval, t_eval, u, v, p))
+    np.savetxt('{:}/new_result_{:05d}.tsv'.format(out_dir, solver.get_iter()), arrayForOutput, fmt = '%.6e', delimiter = '\t', newline = '\r\n', header='x \t y \t t \t u \t v \t w \t p')
     domain.split_tsv_by_time(input_file='output_Grid/new_result_00100.tsv', out_dir="output_split_Grid")
     print("outputdata出力完了")
