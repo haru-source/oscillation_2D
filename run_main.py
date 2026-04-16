@@ -43,12 +43,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir',         type=str, default = 'output_TEST')
-    parser.add_argument('--epochs_A',    type=int, default=2000)
-    parser.add_argument('--epochs_B',    type=int, default=8000)
+    parser.add_argument('--epochs_A',    type=int, default=100)
+    parser.add_argument('--epochs_B',    type=int, default=100)
     parser.add_argument('--method',      type=str, default='BFGS')
     parser.add_argument('--method_sub',  type=str, default='SSBroyden2') # SSBryoyden2, SSBFGS_AB
-    parser.add_argument('--Nf'        ,  type=int, default=10000)  
-    parser.add_argument('--Nbc'       ,  type=int, default=3000)   
+    parser.add_argument('--Nf'        ,  type=int, default=1000)  
+    parser.add_argument('--Nbc'       ,  type=int, default=1000)   
     parser.add_argument('--Nt'        ,  type=int, default=100)    
 
     args  = parser.parse_args()

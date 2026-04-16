@@ -44,11 +44,12 @@ class Interface():
 
     
     ##########################
-    def normal(self, x, y):
+    def normal(self, x, y, t):
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(x)
             tape.watch(y)
-            F = self.F(x, y)
+            tape.watch(t)
+            F = self.F(x, y, t)
         Fx = tape.gradient(F, x)
         Fy = tape.gradient(F, y)
 
@@ -59,11 +60,12 @@ class Interface():
         return Fx, Fy
     
     ##########################
-    def curvature(self, x, y):
+    def curvature(self, x, y, t):
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(x)
             tape.watch(y)
-            nx, ny = self.normal(x, y)
+            tape.watch(t)
+            nx, ny = self.normal(x, y, t)
         nxx = tape.gradient(nx, x)
         nyy = tape.gradient(ny, y)
 

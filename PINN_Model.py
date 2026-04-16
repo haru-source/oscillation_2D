@@ -45,12 +45,21 @@ class PINN_Model(tf.keras.Model):
     #####################################
     ##    　　　NNの層の形状を構築　　  　##
     #####################################     
-    def build(self):
-        self.hiddenLayers[0].build(input_shape=(None, 2))
-        for l in range(1, self.numHiddenLayers):
-            self.hiddenLayers[l].build(input_shape=(None, self.numNeurons))
+    # def build(self):
+    #     self.hiddenLayers[0].build(input_shape=(None, 3))
+    #     for l in range(1, self.numHiddenLayers):
+    #         self.hiddenLayers[l].build(input_shape=(None, self.numNeurons))
             
-        self.outputLayer.build(input_shape=(None, self.numNeurons))
+    #     self.outputLayer.build(input_shape=(None, self.numNeurons))
+
+      
+    def build(self):
+        ins=(None, 3)
+        for l in range(0, self.numHiddenLayers):
+            self.hiddenLayers[l].build(input_shape=ins)
+            ins = (None, self.numNeurons)
+           
+        self.outputLayer.build(ins)
 
     def scale(self, X):
         aa = tf.constant(2.0, dtype=config.real(tf))
@@ -60,23 +69,32 @@ class PINN_Model(tf.keras.Model):
         return aa * (X - ll) / (rr - ll) - bb
 
   
+    # def call(self, X):
+    #     X = self.scale(X)
+    #     for layer in self.hiddenLayers:
+    #         X = layer(X)
+    #     Y = self.outputLayer(X)
+    #     return Y
+    
+    
     def call(self, X):
         X = self.scale(X)
         for layer in self.hiddenLayers:
-            X = layer(X)
+            Y = layer(X)
+            X = tf.math.tanh(self.act_coeff * Y)
         Y = self.outputLayer(X)
         return Y
 
    #
-    def net_field(self, x, y):
-        X = tf.concat([x,y], axis=1) 
+    def net_field(self, x, y, t):
+        X = tf.concat([x,y,t], axis=1) 
         Y = self.call(X)
         u = Y[:,0:1]
         v = Y[:,1:2]
         p = Y[:,2:3]
         return u, v, p
 
-    def Equations(self, x,y):
+    def Equations(self, x,y,t):
         with tf.GradientTape(persistent=True) as tape1:
             tape1.watch(x)
             tape1.watch(y)
