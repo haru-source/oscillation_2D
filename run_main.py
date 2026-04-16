@@ -43,8 +43,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir',         type=str, default = 'output_TEST')
-    parser.add_argument('--epochs_A',    type=int, default=100)
-    parser.add_argument('--epochs_B',    type=int, default=100)
+    parser.add_argument('--epochs_A',    type=int, default=30)
+    parser.add_argument('--epochs_B',    type=int, default=30)
     parser.add_argument('--method',      type=str, default='BFGS')
     parser.add_argument('--method_sub',  type=str, default='SSBroyden2') # SSBryoyden2, SSBFGS_AB
     parser.add_argument('--Nf'        ,  type=int, default=1000)  
@@ -141,5 +141,8 @@ if __name__ == "__main__":
     u, v, p = model.net_field(x_eval, y_eval, t_eval)
     arrayForOutput = np.hstack((x_eval, y_eval, t_eval, u, v, p))
     np.savetxt('{:}/new_result_{:05d}.tsv'.format(out_dir, solver.get_iter()), arrayForOutput, fmt = '%.6e', delimiter = '\t', newline = '\r\n', header='x \t y \t t \t u \t v \t w \t p')
-    domain.split_tsv_by_time(input_file='output_Grid/new_result_00100.tsv', out_dir="output_split_Grid")
+    
+    
+
+    domain.split_tsv_by_time("output_TEST/new_result_00060.tsv" , out_dir="output_split_Grid")
     print("outputdata出力完了")

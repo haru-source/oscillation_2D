@@ -27,6 +27,9 @@ class PINN_Model(tf.keras.Model):
 
         self.interface = Interface(coeff = 1e-5)
         
+        self.act_coeff = tf.keras.Variable(1.0, trainable=True, dtype=config.real(tf))
+   
+        
         # ----------- 物性値 (pre_run_main から受取る) -----------
         self.Ga = tf.constant(93.5, dtype=config.real(tf))
 #        self.We = tf.constant(4.8e-10, dtype=config.real(tf))
@@ -102,7 +105,7 @@ class PINN_Model(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape2:
                 tape2.watch(x)
                 tape2.watch(y)
-                u, v, p = self.net_field(x, y)
+                u, v, p = self.net_field(x, y, t)
         
             u_x = tape2.gradient(u, x)
             u_y = tape2.gradient(u, y)
@@ -144,7 +147,7 @@ class PINN_Model(tf.keras.Model):
         yy   = resPoints[:,1:2]
         tt  = resPoints[:,2:3]
 
-        Eqns = self.Equations(xx, yy)
+        Eqns = self.Equations(xx, yy, tt)
 
         # Physics loss
         loss_GE = 0.0
@@ -163,14 +166,14 @@ class PINN_Model(tf.keras.Model):
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(x)
             tape.watch(y)
-            u, v, p = self.net_field(x, y)
+            u, v, p = self.net_field(x, y, t)
         ux = tape.gradient(u,x)
         uy = tape.gradient(u,y)
         vx = tape.gradient(v,x)
         vy = tape.gradient(v,y)
         del tape
 
-        nx, ny= self.interface.normal(x, y)
+        nx, ny= self.interface.normal(x, y, t)
         
              # tg = - tf.math.sin(theta)
         VSMALL = 1e-13
@@ -183,7 +186,7 @@ class PINN_Model(tf.keras.Model):
         tau_jet = self.interface.Tau_jet(theta)
 
         BC1 = u*nx + v*ny  # u \dot n = 0
-        BC2 = self.interface.curvature(x,y) - (p + p_jet) * self.We
+        BC2 = self.interface.curvature(x,y,t) - (p + p_jet) * self.We
        
         L1 = 2.0 * ux * nx  +  (uy + vx)*ny 
         L2 = (uy + vx)* nx  +  2.0*vy*ny     
@@ -220,7 +223,8 @@ class PINN_Model(tf.keras.Model):
         t0 = tf.convert_to_tensor(t0, dtype=config.real(tf))
         
         sol = self.net_field(x0, y0, t0)
-        pp = sol[3]
+        pp = sol[2]
+
 
         loss_Pref = tf.reduce_mean(tf.square(pp))
         loss_Pref = 0
@@ -228,8 +232,8 @@ class PINN_Model(tf.keras.Model):
 
     def loss_fn(self, dataList):
         dataGE = dataList[0]                                  # shape: (N, 3)
-        dataBC_L = dataList[1]        
-        dataBC_R = dataList[2]
+        # dataBC_L = dataList[1]        
+        dataBC_R = dataList[1]
 
         loss_GE = self.call_loss_GE(dataGE)
         # BC_L, BC1_L, BC2_L, BC3_L = self.call_loss_BC_Left(dataBC_L)
