@@ -1,10 +1,7 @@
 import config
 from config import *
-
 from Domain import *
-
 from interface import Interface
-
 import numpy as np
 import math as math
 import tensorflow as tf
@@ -17,12 +14,12 @@ from keras import models
 from keras import callbacks
 
 
-class PINN_Model_steady(tf.keras.Model):
+class PINN_Model(tf.keras.Model):
     ######################################################
     ##    　　   ネットワーク層・パラメータを定義　　　　   ##
     ######################################################     
     def __init__(self, numHiddenLayers, numNeurons, domain):
-        super(PINN_Model_steady, self).__init__(name="PINN_Model_steady")
+        super(PINN_Model, self).__init__(name="PINN_Model")
 
         self.numHiddenLayers = numHiddenLayers
         self.numNeurons      = numNeurons
@@ -97,12 +94,21 @@ class PINN_Model_steady(tf.keras.Model):
         
             p_x = tape2.gradient(p, x)
             p_y = tape2.gradient(p, y)
+
+            # T_x = tape2.gradient(T, x)
+            # T_y = tape2.gradient(T, y)
+
             
         u_xx = tape1.gradient(u_x, x)
         u_yy = tape1.gradient(u_y, y)
         
         v_xx = tape1.gradient(v_x, x)
         v_yy = tape1.gradient(v_y, y)
+
+        # T_xx = tape1.gradient(T_x, x)
+        # T_yy = tape1.gradient(T_y, y)
+
+        
     
         del tape1, tape2
         
