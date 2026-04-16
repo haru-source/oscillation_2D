@@ -6,7 +6,7 @@ import numpy as np
 import os
 import tensorflow as tf
 from Domain import *
-from PINN_Model_old import PINN_Model_steady
+from PINN_Model import PINN_Model
 from SolverSciPy import *
 import time
 import argparse
@@ -18,7 +18,7 @@ import math
 # import vtk
 # from vtk.util import numpy_support as vns
 
-from interface_old import Interface
+from interface import Interface
 
 from scipy.linalg import cholesky,LinAlgError
 
@@ -43,12 +43,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir',         type=str, default = 'output_TEST')
-    parser.add_argument('--epochs_A',    type=int, default=2000)
-    parser.add_argument('--epochs_B',    type=int, default=8000)
+    parser.add_argument('--epochs_A',    type=int, default=100)
+    parser.add_argument('--epochs_B',    type=int, default=100)
     parser.add_argument('--method',      type=str, default='BFGS')
     parser.add_argument('--method_sub',  type=str, default='SSBroyden2') # SSBryoyden2, SSBFGS_AB
-    parser.add_argument('--Nf'        ,  type=int, default=10000)  
-    parser.add_argument('--Nbc'       ,  type=int, default=3000)   
+    parser.add_argument('--Nf'        ,  type=int, default=1000)  
+    parser.add_argument('--Nbc'       ,  type=int, default=1000)   
     parser.add_argument('--Nt'        ,  type=int, default=100)    
 
     args  = parser.parse_args()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     rmin = 1e-6
     domain = DomainSphere(Space_1D(rmin, 1.0), Space_1D(0, np.pi ), timeDomain=TimeDomain(0.0,2*np.pi), a2=0.1)  
 
-    model = PINN_Model_steady(numHiddenLayers=3, numNeurons=40, domain = domain)
+    model = PINN_Model(numHiddenLayers=5, numNeurons=30, domain = domain)
     model.build()
     model.summary()
 
